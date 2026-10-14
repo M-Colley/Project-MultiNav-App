@@ -118,7 +118,7 @@ function makeOverview(original, vertices, points) {
             flush();
         }
     }
-    features.push(...original.features.filter(f => f.type === 'landmark'));
+    features.push(...original.features.filter(f => f.type === 'landmark').slice(0, 1));
     for (const y of ys) for (const x of xs) {
         const p = [x, y];
         if (same(p, vertices[0]) || same(p, vertices.at(-1))) continue;

@@ -77,6 +77,7 @@ assert.deepEqual(new Set(deck), new Set(Object.keys(sketchDirections)), 'Study d
 assert.equal(deck.length, files.length);
 for (const file of files) {
     const doc = load(path.join(root, 'overviews', file)), label = doc.metadata.name;
+    assert.equal(doc.features.filter(f => f.type === 'landmark').length, 1, `${label}: must have one POI`);
     const points = trace(doc, ['onRoute']);
     const directions = points.slice(1).map((p, i) => p[0] > points[i][0] ? 'E' : p[0] < points[i][0] ? 'W' : p[1] > points[i][1] ? 'S' : 'N').join('');
     assert.equal(directions, sketchDirections[label], `${label}: route differs from photo`);

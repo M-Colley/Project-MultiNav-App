@@ -206,14 +206,14 @@ final class StudySession: ObservableObject {
         startRound()
     }
 
-    // Creates a complete local candidate with the same 14 independent burst
-    // profiles used by the app defaults and the expected round number.
+    // Creates a local practice candidate with maximum route/intersection
+    // intensity, all 14 burst profiles, and the expected round number.
     private func activateNextLocalCandidate() {
         let step = roundNumber + 1
         let candidateID = "local-\(sessionID)-round-\(step)"
         guard isLocalTestMode,
               let values = ParameterSet(
-                haptics: ParameterSet.defaultHaptics,
+                haptics: PracticeHaptics.profiles,
                 candidateID: candidateID,
                 phase: "exploration",
                 phaseStep: step
@@ -264,6 +264,7 @@ final class StudySession: ObservableObject {
 
     // Ends exploration and moves to the survey.
     func foundTarget() {
+        guard phase == .exploring else { return }
         if timeToTarget == nil, let start = explorationStart {
             timeToTarget = Date().timeIntervalSince(start)
         }

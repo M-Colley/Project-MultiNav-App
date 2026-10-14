@@ -171,6 +171,8 @@ struct MapScreen: View {
 
     private var config: TactileMapViewConfiguration {
         var config = TactileMapViewConfiguration.default
+        // Reserve room for fixed-size end markers/road caps at the cropped edge.
+        config.canvasPadding = PhysicalDimensions.mmToPoints(isZoomed ? 5 : 4) + 4
 
         config.typeStyles[.start] = ElementStyle(
             color: .systemGreen,
@@ -252,15 +254,18 @@ struct MapScreen: View {
             roundHeader
 
             if let presentation {
-                TactileMapView(
-                    layers: presentation.layers,
-                    configuration: config,
-                    feedbackPolicy: policy,
-                    onBackGesture: { handleBackGesture() },
-                    onDoubleTap: { element in
-                        doubleTap(on: element)
-                    }
-                )
+                ResearcherMapContainer(onComplete: completeExploration) {
+                    TactileMapView(
+                        layers: StudyMapLayout.fittedLayers(presentation.layers),
+                        configuration: config,
+                        feedbackPolicy: policy,
+                        onBackGesture: { handleBackGesture() },
+                        onDoubleTap: { element in
+                            doubleTap(on: element)
+                        }
+                    )
+                    .accessibilityAction(named: Text("Finish exploration"), completeExploration)
+                }
                 .id(presentation.layers.map(\.id))
                 .ignoresSafeArea(edges: .horizontal)
             } else {
@@ -270,8 +275,6 @@ struct MapScreen: View {
                     .padding()
                 Spacer()
             }
-
-            foundButton
         }
         
         //Toolbar with navigation buttons
@@ -306,6 +309,18 @@ struct MapScreen: View {
         .onAppear { loadOverview() }
         .onChange(of: session.currentMapName) { _, _ in loadOverview() }
         .onDisappear { policy.stopAll() }
+        .task(id: presentation?.layers.map(\.id)) {
+            guard let presentation else { return }
+            // Let the old canvas finish lifting its active touch before speech.
+            do { try await Task.sleep(for: .milliseconds(250)) } catch { return }
+            guard !Task.isCancelled, session.phase == .exploring else { return }
+            let announcement = presentation.isZoomed ? "Intersection view" : "Route overview"
+            if UIAccessibility.isVoiceOverRunning {
+                UIAccessibility.post(notification: .announcement, argument: announcement)
+            } else {
+                policy.audioEngine.speak(announcement, configuration: policy.config)
+            }
+        }
         .alert("Could not open intersection", isPresented: Binding(
             get: { intersectionLoadError != nil },
             set: { if !$0 { intersectionLoadError = nil } }
@@ -326,7 +341,7 @@ struct MapScreen: View {
             Text("Round \(session.roundNumber)")
                 .font(.headline)
             if !session.targetName.isEmpty {
-                Text("Find: \(session.targetName)")
+                Text("Find: \(StudyMapSpeech.label(type: "end", name: session.targetName))")
                     .font(.title3.bold())
             }
             Text(session.currentMapName)
@@ -337,21 +352,13 @@ struct MapScreen: View {
         .padding(.vertical, 8)
         .background(.thinMaterial)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("Round \(session.roundNumber). Your task: find \(session.targetName)")
+        .accessibilityLabel("Round \(session.roundNumber). Your task: find \(StudyMapSpeech.label(type: "end", name: session.targetName))")
+        .accessibilityAction(named: Text("Finish exploration"), completeExploration)
     }
 
-    private var foundButton: some View {
-        Button {
-            policy.stopAll()
-            session.foundTarget()
-        } label: {
-            Text("I found the target")
-                .frame(maxWidth: .infinity)
-        }
-        .buttonStyle(.borderedProminent)
-        .controlSize(.large)
-        .padding()
-        .accessibilityHint("Ends this round and opens the survey")
+    private func completeExploration() {
+        policy.stopAll()
+        session.foundTarget()
     }
 
     private func loadOverview() {
@@ -429,7 +436,6 @@ struct MapScreen: View {
     private func showMap(_ newPresentation: MapPresentation?) {
         // Feedback and active touches belong to the map being left.
         policy.stopAll()
-        policy.toneGen.stop()
         presentation = newPresentation
     }
 
@@ -485,7 +491,8 @@ class OptimizedSpatialPolicy: DefaultFeedbackPolicy {
     override func onEnter(element: any TactileMapElement, touchType: TouchType) {
         onElementEntered?(element)
 
-        let name = element.properties.name
+        let name = StudyMapSpeech.label(type: element.elementType.rawValue,
+                                        name: element.properties.name)
         let optimizedType = HapticPat(rawValue: element.elementType.rawValue)
 
         if let optimizedType {
@@ -549,7 +556,13 @@ class OptimizedSpatialPolicy: DefaultFeedbackPolicy {
     /// Taps still announce the element, but do not add the package's default
     /// transient tap on top of the optimizer-controlled burst feedback.
     override func onTap(element: any TactileMapElement, touchType: TouchType) {
-        audioEngine.speak(element.properties.name, configuration: config)
+        audioEngine.speak(StudyMapSpeech.label(type: element.elementType.rawValue,
+                                              name: element.properties.name), configuration: config)
+    }
+
+    override func stopAll() {
+        super.stopAll()
+        toneGen.stop()
     }
     
     // Stops the haptic engine and tone generator when the finger exits an element

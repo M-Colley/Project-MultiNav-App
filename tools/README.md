@@ -1,9 +1,16 @@
 # Map routes
 
+The app update, questionnaire contract, and device verification steps are in
+[`docs/Firebase-questionnaire-v2-handoff.md`](../docs/Firebase-questionnaire-v2-handoff.md).
+Run `python tools/check_study_updates.py` for portable Swift regression checks;
+these require an existing Swift installation and the sibling package source copy.
+
 Every overview follows one cell of the supplied whiteboard photo: exactly two
 on-route intersections, with start/end at two other grid intersections. Routes
 can have zero, one, or two turns. The four consecutive grid nodes for each map
-are defined in `update_map_routes.cjs`; landmarks and overview metadata are preserved.
+are defined in `update_map_routes.cjs`; the first landmark and overview metadata are preserved.
+Each overview contains one POI. Display fitting and spoken labels are handled in
+the app, leaving route geometry and resource lookup names intact.
 
 Map numbers match the photo's cells in row order, left to right and top to bottom.
 The crossed-out row 2, column 2 is excluded (`map05_aurora`), leaving 17 maps without

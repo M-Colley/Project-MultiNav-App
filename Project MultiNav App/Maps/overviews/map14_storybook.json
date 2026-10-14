@@ -231,22 +231,6 @@
             }
         },
         {
-            "id": "lmk1",
-            "type": "landmark",
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    600,
-                    1200
-                ]
-            },
-            "properties": {
-                "name": "Fountain Plaza",
-                "level": 1,
-                "accessible": true
-            }
-        },
-        {
             "id": "intersection-0-0",
             "type": "offRouteIntersection",
             "geometry": {
