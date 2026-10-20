@@ -105,6 +105,33 @@ struct StudyUpdateTests {
         precondition(points.map(\.x).min() == 0 && points.map(\.y).min() == 0)
         precondition(points.map(\.x).max() == fitted[0].document.bounds.width)
         precondition(points.map(\.y).max() == fitted[0].document.bounds.height)
+
+        // Decoration must leave every touchable document and its order unchanged.
+        let decorated = StudyMapLayout.withCrosswalkStripes(fitted)
+        let interactive = decorated.filter(\.isInteractable)
+        let originalInteractive = fitted.filter(\.isInteractable)
+        precondition(interactive.count == originalInteractive.count)
+        for (before, after) in zip(originalInteractive, interactive) {
+            precondition(before.id == after.id)
+            precondition(before.document.features == after.document.features)
+            precondition(before.document.bounds == after.document.bounds)
+        }
+        precondition(decorated.allSatisfy { $0.document.bounds == fitted[0].document.bounds })
+        let crossings = fitted.flatMap { $0.document.features }.filter {
+            ["onRouteCrosswalk", "offRouteCrosswalk"].contains($0.elementType.rawValue)
+        }
+        if crossings.isEmpty {
+            precondition(decorated.count == fitted.count)
+        } else {
+            precondition(decorated.count == fitted.count + 1 && !decorated.last!.isInteractable)
+            let stripes = decorated.last!.document.features.filter { $0.elementType == .crosswalk }
+            for crossing in crossings {
+                guard case .lineString(let points) = crossing.geometry else { continue }
+                precondition(stripes.filter {
+                    $0.geometry == crossing.geometry || $0.geometry == .lineString(Array(points.reversed()))
+                }.count == 1)
+            }
+        }
     }
 
     static func maps(root: URL) throws {
@@ -142,6 +169,7 @@ struct StudyUpdateTests {
         }
         precondition(overlays == 34)
         precondition(StudyMapLayout.fittedLayers([]).isEmpty)
+        precondition(StudyMapLayout.withCrosswalkStripes([]).isEmpty)
         precondition(StudyMapSpeech.label(type: "offRoute", name: "Birch Street") == "Birch Street")
         precondition(StudyMapSpeech.label(type: "landmark", name: "Library") == "Library")
         print("Checked all 17 overviews and 34 base/route pairs using the app's actual layout and speech code.")

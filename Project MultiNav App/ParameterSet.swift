@@ -269,19 +269,19 @@ private enum FirestoreNumber {
 extension ParameterSet {
     static let defaultHaptics: [HapticPat: BurstParameters] = [
         .onRoute: BurstParameters(intensity: 1.0, sharpness: 0.5, pulseCount: 120, onDuration: 1.00, offDuration: 0.01),
-        .offRoute: BurstParameters(intensity: 0.25, sharpness: 0.25, pulseCount: 120, onDuration: 1.00, offDuration: 0.01),
-        .onRouteIntersection: BurstParameters(intensity: 0.75, sharpness: 0.25, pulseCount: 15, onDuration: 0.25, offDuration: 0.05),
-        .offRouteIntersection: BurstParameters(intensity: 0.75, sharpness: 0.25, pulseCount: 120, onDuration: 1.00, offDuration: 0.01),
-        .street: BurstParameters(intensity: 0.33, sharpness: 0.33, pulseCount: 60, onDuration: 1.00, offDuration: 0.15),
-        .onRouteSidewalk: BurstParameters(intensity: 0.75, sharpness: 1.0, pulseCount: 60, onDuration: 1.00, offDuration: 0.01),
-        .offRouteSidewalk: BurstParameters(intensity: 0.25, sharpness: 0.25, pulseCount: 60, onDuration: 1.00, offDuration: 0.01),
-        .onRouteCrosswalk: BurstParameters(intensity: 0.75, sharpness: 1.0, pulseCount: 60, onDuration: 1.00, offDuration: 0.01),
-        .offRouteCrosswalk: BurstParameters(intensity: 0.25, sharpness: 0.25, pulseCount: 60, onDuration: 1.00, offDuration: 0.01),
-        .turn: BurstParameters(intensity: 0.25, sharpness: 0.25, pulseCount: 60, onDuration: 1.00, offDuration: 0.01),
-        .intersectionCenter: BurstParameters(intensity: 0.25, sharpness: 0.25, pulseCount: 60, onDuration: 1.00, offDuration: 0.01),
-        .start: BurstParameters(intensity: 0.75, sharpness: 1.0, pulseCount: 10, onDuration: 0.25, offDuration: 0.50),
+        .offRoute: BurstParameters(intensity: 1.0, sharpness: 0.25, pulseCount: 120, onDuration: 1.00, offDuration: 0.01),
+        .onRouteIntersection: BurstParameters(intensity: 1.0, sharpness: 0.25, pulseCount: 15, onDuration: 0.25, offDuration: 0.05),
+        .offRouteIntersection: BurstParameters(intensity: 1.0, sharpness: 0.25, pulseCount: 120, onDuration: 1.00, offDuration: 0.01),
+        .street: BurstParameters(intensity: 1.0, sharpness: 0.33, pulseCount: 60, onDuration: 1.00, offDuration: 0.15),
+        .onRouteSidewalk: BurstParameters(intensity: 1.0, sharpness: 1.0, pulseCount: 60, onDuration: 1.00, offDuration: 0.01),
+        .offRouteSidewalk: BurstParameters(intensity: 1.0, sharpness: 0.25, pulseCount: 60, onDuration: 1.00, offDuration: 0.01),
+        .onRouteCrosswalk: BurstParameters(intensity: 1.0, sharpness: 1.0, pulseCount: 60, onDuration: 1.00, offDuration: 0.01),
+        .offRouteCrosswalk: BurstParameters(intensity: 1.0, sharpness: 0.25, pulseCount: 60, onDuration: 1.00, offDuration: 0.01),
+        .turn: BurstParameters(intensity: 1.0, sharpness: 0.25, pulseCount: 60, onDuration: 1.00, offDuration: 0.01),
+        .intersectionCenter: BurstParameters(intensity: 1.0, sharpness: 0.25, pulseCount: 60, onDuration: 1.00, offDuration: 0.01),
+        .start: BurstParameters(intensity: 1.0, sharpness: 1.0, pulseCount: 10, onDuration: 0.25, offDuration: 0.50),
         .landmark: BurstParameters(intensity: 1.0, sharpness: 0.15, pulseCount: 60, onDuration: 1.00, offDuration: 0.01),
-        .end: BurstParameters(intensity: 0.75, sharpness: 1.0, pulseCount: 120, onDuration: 1.00, offDuration: 0.01),
+        .end: BurstParameters(intensity: 1.0, sharpness: 1.0, pulseCount: 120, onDuration: 1.00, offDuration: 0.01),
     ]
 }
 

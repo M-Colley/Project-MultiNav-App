@@ -4,6 +4,46 @@ import TactileMapCore
 /// Fits the occupied coordinate space, leaving physical stroke/marker sizes to
 /// the existing renderer. All layers share one transform for drawing and hits.
 enum StudyMapLayout {
+    /// Uses the existing renderer's zebra crossings as decoration only. Original
+    /// on/off-route elements keep their IDs, geometry, hit priority and feedback.
+    /// Call after fitting so the additional layer cannot change the map transform.
+    static func withCrosswalkStripes(_ layers: [TactileMapLayer]) -> [TactileMapLayer] {
+        guard let first = layers.first else { return layers }
+        var stripes: [MapElement] = []
+        var seen: Set<TactileGeometry> = []
+        var markers: [MapElement] = []
+        for layer in layers {
+            for feature in layer.document.features {
+                let type = feature.elementType.rawValue
+                if ["onRouteCrosswalk", "offRouteCrosswalk"].contains(type),
+                   case .lineString(let points) = feature.geometry, points.count >= 2 {
+                    guard !seen.contains(feature.geometry) else { continue }
+                    seen.insert(feature.geometry)
+                    seen.insert(.lineString(Array(points.reversed())))
+                    stripes.append(MapElement(
+                        id: "\(layer.id):stripe:\(feature.id)", elementType: .crosswalk,
+                        geometry: feature.geometry, properties: feature.properties
+                    ))
+                } else if ["start", "end", "turn"].contains(type),
+                          case .point = feature.geometry {
+                    // Redraw these above the stripes so crossing ends never obscure markers.
+                    markers.append(MapElement(
+                        id: "\(layer.id):marker:\(feature.id)", elementType: feature.elementType,
+                        geometry: feature.geometry, properties: feature.properties
+                    ))
+                }
+            }
+        }
+        guard !stripes.isEmpty else { return layers }
+        let decoration = TactileMapDocument(
+            version: first.document.version, bounds: first.document.bounds,
+            features: stripes + markers, metadata: first.document.metadata
+        )
+        return layers + [TactileMapLayer(
+            id: "crosswalk-decoration", document: decoration, isInteractable: false
+        )]
+    }
+
     static func fittedLayers(_ layers: [TactileMapLayer]) -> [TactileMapLayer] {
         let points = layers.flatMap { $0.document.features }.flatMap { coordinates($0.geometry) }
         guard let minX = points.map(\.x).min(), let maxX = points.map(\.x).max(),

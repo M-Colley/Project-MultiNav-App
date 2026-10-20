@@ -102,8 +102,8 @@ no MOBO implementation is included here.
   action is also available on the map/round header.
 - The map fits its occupied area with room for marker edges; removing the
   completion button frees vertical space. Stroke and marker sizes are unchanged.
-- Local test/practice route, endpoint, intersection, on-route sidewalk/crosswalk,
-  turn and center cues use intensity 1, preserving sharpness and timings. This
+- All app default and local test/practice cues use maximum intensity 1,
+  preserving sharpness and timings. This
   applies to existing local test mode, which uploads no responses. It does not
   add a separate practice phase to the connected study. Remote candidates are
   played and recorded exactly as received.
